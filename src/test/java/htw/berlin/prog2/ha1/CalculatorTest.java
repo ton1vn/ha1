@@ -121,7 +121,7 @@ class CalculatorTest {
     }
 
     @Test
-    @DisplayName('should display the sum of the first summand and second summand and + the second summand')
+    @DisplayName("should display the sum of the first summand and second summand and + the second summand")
     void additionWithEqualsOperator(){
         Calculator calc = new Calculator();
 
