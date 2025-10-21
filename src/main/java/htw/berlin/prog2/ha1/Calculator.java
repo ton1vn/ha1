@@ -74,18 +74,46 @@ public class Calculator {
      * @param operation "√" für Quadratwurzel, "%" für Prozent, "1/x" für Inversion
      */
     public void pressUnaryOperationKey(String operation) {
+
+        if (operation.equals("+/-")) {
+            if (screen.equals("0") || screen.equals("-0")) {
+                screen = "0"; // Es gibt kein negatives 0
+            } else if (screen.startsWith("-")) {
+                screen = screen.substring(1); // Negativ -> Positiv
+            } else {
+                screen = "-" + screen; // Positiv -> Negativ
+            }
+            return;
+        }
+
         latestValue = Double.parseDouble(screen);
         latestOperation = operation;
-        var result = switch(operation) {
-            case "√" -> Math.sqrt(Double.parseDouble(screen));
-            case "%" -> Double.parseDouble(screen) / 100;
-            case "1/x" -> 1 / Double.parseDouble(screen);
-            default -> throw new IllegalArgumentException();
-        };
+
+        double result;
+        switch (operation) {
+            case "√":
+                result = Math.sqrt(latestValue);
+                break;
+            case "%":
+                result = latestValue / 100;
+                break;
+            case "1/x":
+                if (latestValue == 0) {
+                    screen = "Error";
+                    return; // sofort abbrechen
+                }
+                result = 1 / latestValue;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
         screen = Double.toString(result);
-        if(screen.equals("NaN")) screen = "Error";
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
-        if(latestValue==0 && latestOperation.equals("1/x")) screen = "Error";
+
+        if (screen.equals("NaN") || screen.equals("Infinity"))
+            screen = "Error";
+        if (screen.contains(".") && screen.length() > 11)
+            screen = screen.substring(0, 10);
 
     }
 
@@ -128,6 +156,7 @@ public class Calculator {
         lastOperand = operand;
 
         double result = switch(latestOperation) {
+
             case "+" -> latestValue + operand;
             case "-" -> latestValue - operand;
             case "x" -> latestValue * operand;

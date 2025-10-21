@@ -106,15 +106,15 @@ class CalculatorTest {
         assertEquals(expected, actual);
     }
     @Test
-    @DisplayName("Unary operation with 0 should not work")
-    void testDivideByX(){
+    @DisplayName("should display 0, because their is no negative 0")
+    void testMinusZero() {
         Calculator calc = new Calculator();
 
         calc.pressDigitKey(0);
-        calc.pressUnaryOperationKey("1/x");
+        calc.pressUnaryOperationKey("+/-");
         calc.pressEqualsKey();
 
-        String expected = "Error";
+        String expected = "0";
         String actual = calc.readScreen();
 
         assertEquals(expected, actual);
