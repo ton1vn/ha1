@@ -32,8 +32,9 @@ public class Calculator {
      */
     public void pressDigitKey(int digit) {
         if(digit > 9 || digit < 0) throw new IllegalArgumentException();
-
-        if(screen.equals("0") || latestValue == Double.parseDouble(screen)) screen = "";
+        if(screen.equals("0") || (latestValue == Double.parseDouble(screen) && !screen.contains("."))) {
+            screen = "";
+        }
 
         screen = screen + digit;
     }
@@ -125,49 +126,56 @@ public class Calculator {
      * Beim zweimaligem Drücken, oder wenn bereits ein Trennzeichen angezeigt wird, passiert nichts.
      */
     public void pressDotKey() {
-        if(!screen.contains(".")) screen = screen + ".";
+        if (!screen.contains(".")) {
+            if (screen.equals("0")) {
+                screen = "0.";
+            } else {
+                screen = screen + ".";
+            }
+        }
     }
 
-    /**
-     * Empfängt den Befehl der gedrückten Vorzeichenumkehrstaste ("+/-").
-     * Zeigt der Bildschirm einen positiven Wert an, so wird ein "-" links angehängt, der Bildschirm
-     * aktualisiert und die Inhalt fortan als negativ interpretiert.
-     * Zeigt der Bildschirm bereits einen negativen Wert mit führendem Minus an, dann wird dieses
-     * entfernt und der Inhalt fortan als positiv interpretiert.
-     */
-    public void pressNegativeKey() {
-        screen = screen.startsWith("-") ? screen.substring(1) : "-" + screen;
+        /**
+         * Empfängt den Befehl der gedrückten Vorzeichenumkehrstaste ("+/-").
+         * Zeigt der Bildschirm einen positiven Wert an, so wird ein "-" links angehängt, der Bildschirm
+         * aktualisiert und die Inhalt fortan als negativ interpretiert.
+         * Zeigt der Bildschirm bereits einen negativen Wert mit führendem Minus an, dann wird dieses
+         * entfernt und der Inhalt fortan als positiv interpretiert.
+         */
+        public void pressNegativeKey () {
+            screen = screen.startsWith("-") ? screen.substring(1) : "-" + screen;
+        }
+
+        /**
+         * Empfängt den Befehl der gedrückten "="-Taste.
+         * Wurde zuvor keine Operationstaste gedrückt, passiert nichts.
+         * Wurde zuvor eine binäre Operationstaste gedrückt und zwei Operanden eingegeben, wird das
+         * Ergebnis der Operation angezeigt. Falls hierbei eine Division durch Null auftritt, wird "Error" angezeigt.
+         * Wird die Taste weitere Male gedrückt (ohne andere Tasten dazwischen), so wird die letzte
+         * Operation (ggf. inklusive letztem Operand) erneut auf den aktuellen Bildschirminhalt angewandt
+         * und das Ergebnis direkt angezeigt.
+         */
+        public void pressEqualsKey () {
+            double current = Double.parseDouble(screen);
+            // Wenn "=" wiederholt gedrückt wird (also latestValue == current),
+            // dann verwende den zuletzt gespeicherten Operand erneut
+            double operand = (latestValue == current) ? lastOperand : current;
+            lastOperand = operand;
+
+            double result = switch (latestOperation) {
+
+                case "+" -> latestValue + operand;
+                case "-" -> latestValue - operand;
+                case "x" -> latestValue * operand;
+                case "/" -> latestValue / operand;
+                default -> 0;
+            };
+            screen = Double.toString(result);
+            if (screen.equals("Infinity")) screen = "Error";
+            if (screen.endsWith(".0")) screen = screen.substring(0, screen.length() - 2);
+            if (screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+
+            latestValue = result;
+        }
     }
 
-    /**
-     * Empfängt den Befehl der gedrückten "="-Taste.
-     * Wurde zuvor keine Operationstaste gedrückt, passiert nichts.
-     * Wurde zuvor eine binäre Operationstaste gedrückt und zwei Operanden eingegeben, wird das
-     * Ergebnis der Operation angezeigt. Falls hierbei eine Division durch Null auftritt, wird "Error" angezeigt.
-     * Wird die Taste weitere Male gedrückt (ohne andere Tasten dazwischen), so wird die letzte
-     * Operation (ggf. inklusive letztem Operand) erneut auf den aktuellen Bildschirminhalt angewandt
-     * und das Ergebnis direkt angezeigt.
-     */
-    public void pressEqualsKey() {
-        double current = Double.parseDouble(screen);
-        // Wenn "=" wiederholt gedrückt wird (also latestValue == current),
-        // dann verwende den zuletzt gespeicherten Operand erneut
-        double operand = (latestValue == current) ? lastOperand : current;
-        lastOperand = operand;
-
-        double result = switch(latestOperation) {
-
-            case "+" -> latestValue + operand;
-            case "-" -> latestValue - operand;
-            case "x" -> latestValue * operand;
-            case "/" -> latestValue / operand;
-            default -> 0;
-        };
-        screen = Double.toString(result);
-        if(screen.equals("Infinity")) screen = "Error";
-        if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
-
-        latestValue = result;
-    }
-}
